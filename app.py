@@ -778,7 +778,19 @@ def dashboard():
         (today, *ACTIVE_APPOINTMENT_STATUSES),
     ).fetchone()[0]
     busy_doctors = conn.execute(
-        "SELECT COUNT(*) FROM users WHERE role='doctor' AND availability_status='busy'"
+        """
+        SELECT COUNT(DISTINCT doctor_id)
+        FROM (
+            SELECT id AS doctor_id
+            FROM users
+            WHERE role='doctor' AND availability_status='busy'
+            UNION
+            SELECT doctor_id
+            FROM doctor_blocks
+            WHERE block_date=?
+        )
+        """,
+        (today,),
     ).fetchone()[0]
     if session["role"] == "doctor":
         recent_patients = conn.execute(
