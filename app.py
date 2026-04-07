@@ -793,6 +793,37 @@ def dashboard():
         (today,),
     ).fetchone()[0]
     if session["role"] == "doctor":
+        doctor_id = session["user_id"]
+        total_patients = conn.execute(
+            "SELECT COUNT(*) FROM patients WHERE assigned_doctor=?",
+            (doctor_id,),
+        ).fetchone()[0]
+        waiting_patients = conn.execute(
+            "SELECT COUNT(*) FROM patients WHERE assigned_doctor=? AND status='waiting'",
+            (doctor_id,),
+        ).fetchone()[0]
+        in_consultation = conn.execute(
+            "SELECT COUNT(*) FROM patients WHERE assigned_doctor=? AND status='in_consultation'",
+            (doctor_id,),
+        ).fetchone()[0]
+        prescribed = conn.execute(
+            "SELECT COUNT(*) FROM patients WHERE assigned_doctor=? AND status='prescribed'",
+            (doctor_id,),
+        ).fetchone()[0]
+        discharged = conn.execute(
+            "SELECT COUNT(*) FROM patients WHERE assigned_doctor=? AND status='discharged'",
+            (doctor_id,),
+        ).fetchone()[0]
+        today_appts = conn.execute(
+            """
+            SELECT COUNT(*)
+            FROM appointments
+            WHERE appointment_date=?
+              AND doctor_id=?
+              AND status IN (?, ?, ?)
+            """,
+            (today, doctor_id, *ACTIVE_APPOINTMENT_STATUSES),
+        ).fetchone()[0]
         recent_patients = conn.execute(
             """
             SELECT p.*, u.full_name AS doctor_name, u.specialization AS doctor_specialization
@@ -803,7 +834,7 @@ def dashboard():
             ORDER BY p.admitted_at DESC
             LIMIT 5
             """,
-            (session["user_id"],),
+            (doctor_id,),
         ).fetchall()
     else:
         recent_patients = conn.execute(
@@ -1611,7 +1642,7 @@ def prescription_pdf(prescription_id):
     rx_style = ParagraphStyle("rx", fontName="Helvetica", fontSize=11, textColor=dark, leading=18, leftIndent=20)
 
     story = []
-    story.append(Paragraph("MediCare Hospital", title_style))
+    story.append(Paragraph("SyncMed Hospital", title_style))
     story.append(Paragraph("Quality Healthcare for Everyone", sub_style))
     story.append(Spacer(1, 0.3 * cm))
     story.append(HRFlowable(width="100%", thickness=2, color=brand))

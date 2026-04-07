@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% block title %}Dashboard - MediCare HMS{% endblock %}
+{% block title %}Dashboard - SyncMed HMS{% endblock %}
 {% block topbar_title %}Operations Dashboard{% endblock %}
 {% block content %}
 {% if session.role == 'receptionist' %}
@@ -125,7 +125,7 @@
   <div class="stat-card">
     <div class="stat-top"><div class="stat-icon gold"><i class="fa-solid fa-users"></i></div><span class="tag">Records</span></div>
     <div class="stat-value">{{ stats.total }}</div>
-    <div class="stat-label">Total visit records in system</div>
+    <div class="stat-label">Total visit records assigned to you</div>
   </div>
 </div>
 
